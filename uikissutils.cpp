@@ -1,14 +1,14 @@
 #include "uikissutils.h"
-#include <QDebug>
-UIKISSUtils::UIKISSUtils(QObject *parent) : QObject{parent} {}
+#include "ez_cpp_utils.h"
+
 /**
-     * Wrap a frame in KISS and return as QByteArray. Many thanks to John
+     * Wrap a frame in KISS and return as std::string. Many thanks to John
      * Langner WB2OSZ since I based this on his C code from Direwolf v1.2.
      *
      * @param in - input array of bytes representing the AX.25 UI frame.
-     * @return - QByteArray of KISS wrapped data.
+     * @return - std::string of KISS wrapped data.
      */
-QByteArray UIKISSUtils::kissWrap(const QByteArray in)
+std::string UIKISSUtils::kissWrap(const std::string in)
 {
     /**
      * The KISS "FEND" (frame end) character. One at each end of a KISS frame
@@ -30,27 +30,16 @@ QByteArray UIKISSUtils::kissWrap(const QByteArray in)
     // John Langner's way from C in Direwolf 1.2
     // add a few indexes in case there needs to be any
     // escaped FENDs for FESCs
-    // This is done the Qt way with QByteArray for
+    // This is done the Qt way with std::std::stri for
     // inclusion in Qt projects.  Avoids array arithmetic
     //int[] cout = new int[in.length + 25];
-    QByteArray out;
+    std::string out;
 
-    out.append(FEND); // the opening FRAME END
-    // int olen = 0;
-    //cout[olen++] = FEND;
-    //for (int j = 0; j < in.length; j++) {
-    for (int i = 0; i < in.length(); i++) {
-        //qDebug() << "Char:" << in.at(i);
-        if (in.at(i) == FEND) {
-            out.append(FESC).append(TFEND);
-        }
-        else if (in.at(i) == FESC) {
-            out.append(FESC).append(TFESC);
-        }
-        else {
-            out.append(in.at(i));
-        }
-        /*
+    out.append(1, FEND); // the opening FRAME END
+     // the C way
+    /* int olen = 0;
+    cout[olen++] = FEND;
+    for (int j = 0; j < in.length; j++) {
         if (in[j] == FEND) {
             cout[olen++] = FESC;
             cout[olen++] = TFEND;
@@ -63,68 +52,66 @@ QByteArray UIKISSUtils::kissWrap(const QByteArray in)
             cout[olen++] = in[j];
         }
     */
+   // the C++ way
+    for (int i = 0; i < in.length(); i++) {
+        //qDebug() << "Char:" << in.at(i);
+        if (in.at(i) == FEND) {
+            out.append(1, FESC).append(1, TFEND);
+        }
+        else if (in.at(i) == FESC) {
+            out.append(1, FESC).append(1, TFESC);
+        }
+        else {
+            out.append(1, in.at(i));
+        }
+
     }
-    //cout[olen++] = FEND;
-    out.append(FEND);
+    //cout[olen++] = FEND; // close the output the C way
+    out.append(1, FEND); // close the output the C++ way
     // control byte inserted late since it's a null
-    out.insert(1, (uchar) 0x00);
-    //return Arrays.copyOf(cout, olen);
-    return out;
+    out.insert(1, 1, 0x00);
+    //return Arrays.copyOf(cout, olen); // the C way
+    return out; // the C++ way
 }
 
 /**
-     * Wrap a command in KISS and return as QByteArray.
+     * Wrap a command in KISS and return as std::string.
      *
      * @param in - value to send with the command code.
      * @param cmdCode = the integer command code to send.
-     * @return - QByteArray of KISS wrapped data.
+     * @return - std::string of KISS wrapped data.
      */
-QByteArray UIKISSUtils::kissWrapCommand(const QByteArray val, const int cmdCode)
+std::string UIKISSUtils::kissWrapCommand(const std::string val, const unsigned char cmdCode)
 {
-    /**
-     * The KISS "FEND" (frame end) character. One at each end of a KISS frame
-     */
-    const char FEND = 0xC0;
-    /**
-     * The KISS "FESC" (frame escape) character. Used to escape "FEND" inside a
-     * KISS frame.
-     */
-    const char FESC = 0xDB;
-    /**
-     * The KISS "TFEND" character.
-     */
-    const char TFEND = 0xDC;
-    /**
-     * The KISS "TFESC" character.
-     */
-    const char TFESC = 0xDD;
+    
     // John Langner's way from C in Direwolf 1.2
     // add a few indexes in case there needs to be any
     // escaped FENDs for FESCs
-    // This is done the Qt way with QByteArray for
+    // This is done the Qt way with std::string for
     // inclusion in Qt projects.  Avoids array arithmetic
     //int[] cout = new int[in.length + 25];
-    QByteArray out;
+    std::string out;
 
-    out.append(FEND); // the opening FRAME END
+    out.append(1, FEND); // the opening FRAME END
     // int olen = 0;
     //cout[olen++] = FEND;
     //for (int j = 0; j < in.length; j++) {
     for (int i = 0; i < val.length(); i++) {
         //qDebug() << "Char:" << in.at(i);
         if (val.at(i) == FEND) {
-            out.append(FESC).append(TFEND);
+            out.append(1, FESC).append(1, TFEND);
         }
         else if (val.at(i) == FESC) {
-            out.append(FESC).append(TFESC);
+            out.append(1, FESC).append(1, TFESC);
         }
         else {
-            out.append(val.at(i));
+            out.append(1, val.at(i));
         }
     }
-    out.append(FEND);
+    out.append(1, FEND);
     // control byte inserted late since it's a null
-    out.insert(1, (uchar) cmdCode); // caller is responsible for ensuring cmd code is valid.
+
+    out.insert(1, 1, cmdCode); // caller is responsible for ensuring cmd code is valid.
     return out;
 }
 
@@ -140,25 +127,8 @@ QByteArray UIKISSUtils::kissWrapCommand(const QByteArray val, const int cmdCode)
      * @param in - input array representation an AX.25 frame to be wrapped in KISS
      * @return - returns int[] of unwrapped AX.25 UI frame or RAW ASCII
      */
-QByteArray UIKISSUtils::kissUnwrap(const QByteArray in)
+std::string UIKISSUtils::kissUnwrap(const std::string in)
 {
-    /**
-     * The KISS "FEND" (frame end) character. One at each end of a KISS frame
-     */
-    const char FEND = 0xC0;
-    /**
-     * The KISS "FESC" (frame escape) character. Used to escape "FEND" inside a
-     * KISS frame.
-     */
-    const char FESC = 0xDB;
-    /**
-     * The KISS "TFEND" character.
-     */
-    const char TFEND = 0xDC;
-    /**
-     * The KISS "TFESC" character.
-     */
-    const char TFESC = 0xDD;
     // John Langner's way fromn Direwolf 1.2
     int olen = 0;
     int ilen = in.length();
@@ -168,7 +138,7 @@ QByteArray UIKISSUtils::kissUnwrap(const QByteArray in)
     // Output array length will be less than input array length because we
     // are removing at least two FEND's
     //int[] out = new int[ilen];
-    QByteArray out = "";
+    std::string out = "";
     if (ilen < 2) {
         /* Need at least the "type indicator" char and FEND. */
         /* Probably more. */
@@ -180,7 +150,7 @@ QByteArray UIKISSUtils::kissUnwrap(const QByteArray in)
         ilen--;
     }
     else {
-        qDebug() << "KISS frame should end with FEND.";
+        //qDebug() << "KISS frame should end with FEND.";
         return "";
     }
     // If the opening char is c0 (FEND) then we don't need to start
@@ -199,7 +169,7 @@ QByteArray UIKISSUtils::kissUnwrap(const QByteArray in)
         // According to the KISS spec, no un-escaped FEND's in the middle of
         // the AX.25 frame characters.
         if (in[j] == FEND) {
-            qDebug() << "KISS frame should not have FEND in the middle.";
+            //qDebug() << "KISS frame should not have FEND in the middle.";
             return "";
         }
         // Escaped mode means we found a FESC down below in the else if and
@@ -217,7 +187,7 @@ QByteArray UIKISSUtils::kissUnwrap(const QByteArray in)
             else {
                 // If we had a FESC and it was not followed by a TFEND or a
                 // TFESC, then that's an error.
-                qDebug() << "KISS protocol error.  Found ";
+                //qDebug() << "KISS protocol error.  Found ";
                 //System.err.printf("%02x ", in[j]);
                 //System.err.println("after " + FESC);
                 return "";
@@ -235,90 +205,98 @@ QByteArray UIKISSUtils::kissUnwrap(const QByteArray in)
             out[olen++] = in[j];
         }
     }
-    if (out.startsWith("00"))
-        return out.mid(1);
+    if (out[0] == '\0')
+        return out.substr(1); // remove leading NULL
     return out;
 }
 
-QByteArray UIKISSUtils::buildUIFrame(QString dest_call, QString source_call, QString digi1, QString digi2, QString text)
+std::string UIKISSUtils::buildUIFrame(std::string dest_call, std::string source_call, std::string digi1, std::string digi2, std::string text)
 {
     /* ax.25 UI frame has 7 chars for dest, 7 chars for source, 7 chars for
     * digi, (7 chars for a second digi) one byte for frame type of UI (03), and one byte for PID (f0)
     */
     // BEFORE GOING ANY FURTHER, Check to see if we have a first digi
-    bool hasNoDigi = digi1.trimmed().isEmpty(); // if digi1 is empty, digi2 is moot
+    bool hasNoDigi = digi1.empty(); // if digi1 is empty, digi2 is moot
     // GET THE SECOND DIGI EXISTENCE FIRST
     bool hasNoDigi2 = hasNoDigi;
     if (!hasNoDigi2) // if false, double-check the second one
-        hasNoDigi2 = digi2.trimmed().isEmpty();
+        hasNoDigi2 = digi2.empty();
 
-    QByteArray out; // outpub buffer
+    std::string out; // output buffer
     // Destination call sign SSID evaluation
     int D_SSID = 0;
-    QStringList parts = dest_call.split("-");
+    // NEED TO USE OUR SPLIT LIBRARY HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    std::vector<std::string> parts;
+    split(dest_call, parts, '-');
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if (parts.size() > 1) // there is an SSID
     {
-        D_SSID = parts.at(1).toInt();
+        D_SSID = atoi(parts.at(1).data());
     }
     // if no SSID, then the whole thing is call sign in parts[0]
-    QByteArray msg = parts.at(0).toLatin1().toUpper().mid(0, 6);
+    std::string msg = parts.at(0).substr(0, 6);
     // max 6 chars for Dest Call sign
     for (int i = 0; i < 6; i++) {
         if (i < dest_call.length()) {
-            out.append((uchar) msg[i] << 1);
+            out.append(1, (unsigned char) msg[i] << 1);
         }
         else {
-            out.append((uchar) 0x40); // bit shifted space 0x20
+            out.append(1, (unsigned char) 0x40); // bit shifted space 0x20
         }
     }
     if (D_SSID == 0) {
         // Dest 0000 SSID char with Control bit set
-        out.append((uchar) 0xe0);
+        out.append(1, (unsigned char) 0xe0);
     }
     else {
         // build the SSID into the Dest Address field
-        uchar val = (uchar) D_SSID;
-        //qDebug() << "OTHER SSID:" << QString::number(val, 2);
+        unsigned char val = (unsigned char) D_SSID;
+        //qDebug() << "OTHER SSID:" << Qstd::stri::number(val, 2);
         val = val << 1; // move the SSID left one bit
-        //qDebug() << "SHIFT SSID:" << QString::number(val, 2);
+        //qDebug() << "SHIFT SSID:" << Qstd::stri::number(val, 2);
         val = val | 0xe0; // bit mask "11100000", last bit unset since Dest address
-        //qDebug() << "MASK SSID:" << QString::number(val, 2);
-        out.append(val);
+        //qDebug() << "MASK SSID:" << Qstd::stri::number(val, 2);
+        out.append(1, val);
     }
 
     // SOURCE Call sign
     D_SSID = 0;
-    parts = source_call.split("-");
+
+    // use an iterator to erase all parts (2)
+    parts.erase(parts.begin(), parts.end()); // clear the vector, but probably not necesssary??????
+    
+    // re-using parts here...be careful of the results
+    split(source_call, parts, '-');
     if (parts.size() > 1) // there is an SSID
     {
-        D_SSID = parts.at(1).toInt();
+        D_SSID = atoi(parts.at(1).data());
     }
     // re-use msg for source and digi
-    msg = source_call.toLatin1().toUpper().mid(0, 6);
+    msg = source_call.substr(0, 6);
     for (int i = 0; i < 6; i++) {
         if (i < source_call.length()) {
-            out.append((uchar) msg[i] << 1);
+            out.append(1, (unsigned char) msg[i] << 1);
         }
         else {
-            out.append((uchar) 0x40);
+            out.append(1, (unsigned char) 0x40);
         }
     }
 
     if (D_SSID == 0) {
         if (hasNoDigi) { // this will be the final address, so set the bit
-            out.append((uchar) 0x61);
+            out.append(1, (unsigned char) 0x61);
         }
         else {
             // Dest 0000 SSID char with Control bit set
-            out.append((uchar) 0x60);
+            out.append(1, (unsigned char) 0x60);
         }
     }
     else {
         // build the SSID into the Dest Address field
-        uchar val = (uchar) D_SSID;
-        //qDebug() << "OTHER SSID:" << QString::number(val, 2);
+        unsigned char val = (unsigned char) D_SSID;
+        //qDebug() << "OTHER SSID:" << Qstd::stri::number(val, 2);
         val = val << 1; // move the SSID left one bit
-        //qDebug() << "SHIFT SSID:" << QString::number(val, 2);
+        //qDebug() << "SHIFT SSID:" << Qstd::stri::number(val, 2);
         if (hasNoDigi) {
             val = val | 0x61; // bit mask "01100001" since no digi follows Source address
             // this will be the final address, so set the bit
@@ -326,8 +304,8 @@ QByteArray UIKISSUtils::buildUIFrame(QString dest_call, QString source_call, QSt
         else {
             val = val | 0x60; // bit mask "01100000", last bit unset since Source address
         }
-        //qDebug() << "MASK SSID:" << QString::number(val, 2);
-        out.append(val);
+        //qDebug() << "MASK SSID:" << Qstd::stri::number(val, 2);
+        out.append(1, val);
     } // END Source Call Sign processing
 
     // If there is a first digi, add it and it's SSID now
@@ -335,18 +313,19 @@ QByteArray UIKISSUtils::buildUIFrame(QString dest_call, QString source_call, QSt
         // now add digi address
         //qDebug() << "DIGI:" << digi;
         D_SSID = 0;
-        parts = digi1.split("-");
+        parts.erase(parts.begin(), parts.end());
+        split(digi1, parts, '-');
         if (parts.size() > 1) {
-            D_SSID = parts.at(1).toInt();
+            D_SSID = atoi(parts.at(1).data());
         }
         // get the Digi call sign
-        msg = parts.at(0).toLatin1().toUpper().trimmed();
+        msg = parts.at(0);
         for (int i = 0; i < 6; i++) {
             if (i < msg.length()) {
-                out.append((uchar) msg[i] << 1);
+                out.append(1, (unsigned char) msg[i] << 1);
             }
             else {
-                out.append((uchar) 0x40); // bit shifted space 0x20
+                out.append(1, (unsigned char) 0x40); // bit shifted space 0x20
             }
         }
         //qDebug() << "DIGI:" << msg << "D_SSID" << D_SSID;
@@ -354,84 +333,85 @@ QByteArray UIKISSUtils::buildUIFrame(QString dest_call, QString source_call, QSt
         // no SSID in the address so encode 0x61
         if (D_SSID == 0) {
             if (hasNoDigi2)
-                out.append((uchar) 0x61);
+                out.append(1, (unsigned char) 0x61);
             else
-                out.append((uchar) 0x60);
-            //qDebug() << "ZERO SSID:" << QString::number(0x61, 2);
+                out.append(1, (unsigned char) 0x60);
+            //qDebug() << "ZERO SSID:" << Qstd::stri::number(0x61, 2);
         }
         else {
             // encode SSID in bits 3-6 and LSB = 1
             // "H" bit NOT set, so 3 MSB's are 011
             // 011 SSID
             // LSB is 1 to mark final digi in list
-            //System.out.println("011" + String.format("%4s", Integer.toBinaryString(D_SSID)).replace(' ', '0') + "1");
-            //out[21] = Integer.parseInt("011" + String.format("%4s", Integer.toBinaryString(D_SSID)).replace(' ', '0') + "1", 2);
-            uchar val = (uchar) D_SSID;
-            //qDebug() << "OTHER SSID:" << QString::number(val, 2);
+            //System.out.println("011" + std::stri.format("%4s", Integer.toBinarystd::stri(D_SSID)).replace(' ', '0') + "1");
+            //out[21] = Integer.parseInt("011" + std::stri.format("%4s", Integer.toBinarystd::stri(D_SSID)).replace(' ', '0') + "1", 2);
+            unsigned char val = (unsigned char) D_SSID;
+            //qDebug() << "OTHER SSID:" << Qstd::stri::number(val, 2);
             val = val << 1; // move the SSID left one bit
-            //qDebug() << "SHIFT SSID:" << QString::number(val, 2);
+            //qDebug() << "SHIFT SSID:" << Qstd::stri::number(val, 2);
             if (hasNoDigi2)       // this is the last address so set the bit
                 val = val | 0x61; // bit mask "01100001"
             else
                 val = val | 0x60; // bit mask "01100000"
-            //qDebug() << "MASK SSID:" << QString::number(val, 2);
-            out.append(val);
-            //qDebug() << "OTHER SSID:" << QString::number(val, 2);
+            //qDebug() << "MASK SSID:" << Qstd::stri::number(val, 2);
+            out.append(1, val);
+            //qDebug() << "OTHER SSID:" << Qstd::stri::number(val, 2);
         }
-        //qDebug() << "SSID:" << QString::number(out[21]);
+        //qDebug() << "SSID:" << Qstd::stri::number(out[21]);
     } // END digi encoding
     // If there is a second digi, add it and it's SSID now
     if (!hasNoDigi2) {
         // now add digi address
         //qDebug() << "DIGI:" << digi;
         D_SSID = 0;
-        parts = digi2.split("-");
+        parts.erase(parts.begin(), parts.end());
+        split(digi2, parts, '-');
         if (parts.size() > 1) {
-            D_SSID = parts.at(1).toInt();
+            D_SSID = atoi(parts.at(1).data());
         }
         // get the Digi call sign
-        msg = parts.at(0).toLatin1().toUpper().trimmed();
+        msg = parts.at(0);;
         for (int i = 0; i < 6; i++) {
             if (i < msg.length()) {
-                out.append((uchar) msg[i] << 1);
+                out.append(1, (unsigned char) msg[i] << 1);
             }
             else {
-                out.append((uchar) 0x40); // bit shifted space 0x20
+                out.append(1, (unsigned char) 0x40); // bit shifted space 0x20
             }
         }
         //qDebug() << "DIGI:" << msg << "D_SSID" << D_SSID;
         // the last address field so LSB is a 1 (UIChat only allows one digi)
         // no SSID in the address so encode 0x61
         if (D_SSID == 0) {
-            out.append((uchar) 0x61);
-            //qDebug() << "ZERO SSID:" << QString::number(0x61, 2);
+            out.append(1, (unsigned char) 0x61);
+            //qDebug() << "ZERO SSID:" << Qstd::stri::number(0x61, 2);
         }
         else {
             // encode SSID in bits 3-6 and LSB = 1
             // "H" bit NOT set, so 3 MSB's are 011
             // 011 SSID
             // LSB is 1 to mark final digi in list
-            //System.out.println("011" + String.format("%4s", Integer.toBinaryString(D_SSID)).replace(' ', '0') + "1");
-            //out[21] = Integer.parseInt("011" + String.format("%4s", Integer.toBinaryString(D_SSID)).replace(' ', '0') + "1", 2);
-            uchar val = (uchar) D_SSID;
-            //qDebug() << "OTHER SSID:" << QString::number(val, 2);
+            //System.out.println("011" + std::stri.format("%4s", Integer.toBinarystd::stri(D_SSID)).replace(' ', '0') + "1");
+            //out[21] = Integer.parseInt("011" + std::stri.format("%4s", Integer.toBinarystd::stri(D_SSID)).replace(' ', '0') + "1", 2);
+            unsigned char val = (unsigned char) D_SSID;
+            //qDebug() << "OTHER SSID:" << Qstd::stri::number(val, 2);
             val = val << 1; // move the SSID left one bit
-            //qDebug() << "SHIFT SSID:" << QString::number(val, 2);
+            //qDebug() << "SHIFT SSID:" << Qstd::stri::number(val, 2);
             val = val | 0x61; // bit mask "01100001"
-            //qDebug() << "MASK SSID:" << QString::number(val, 2);
-            out.append(val);
-            //qDebug() << "OTHER SSID:" << QString::number(val, 2);
+            //qDebug() << "MASK SSID:" << Qstd::stri::number(val, 2);
+            out.append(1, val);
+            //qDebug() << "OTHER SSID:" << Qstd::stri::number(val, 2);
         }
-        //qDebug() << "SSID:" << QString::number(out[21]);
+        //qDebug() << "SSID:" << Qstd::stri::number(out[21]);
     } // END digi encoding
     // Now encode the payload text
     // Control field
     // PID = 0x03, no layer 3
-    out.append((uchar) 0x03);
-    out.append((uchar) 0xf0);
-    msg = text.toLatin1().mid(0, 256); // limit to 256 bytes
+    out.append(1, (unsigned char) 0x03);
+    out.append(1, (unsigned char) 0xf0);
+    msg = text.substr(0, 256); // limit to 256 bytes
     for (int i = 0; i < msg.length(); i++) {
-        out.append((uchar) msg[i]);
+        out.append(1, (unsigned char) msg[i]);
     }
     //qDebug() << "OUT:" << out;
     return out;

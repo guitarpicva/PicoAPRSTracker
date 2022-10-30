@@ -19,21 +19,16 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(PicoAPRSTracker PicoAPRSTracker.cpp )
+add_executable(PicoAPRSTracker PicoAPRSTracker.cpp uikissutils.cpp ez_cpp_utils)
 
 pico_set_program_name(PicoAPRSTracker "PicoAPRSTracker")
 pico_set_program_version(PicoAPRSTracker "0.1")
 
-pico_enable_stdio_uart(PicoAPRSTracker 1)
-pico_enable_stdio_usb(PicoAPRSTracker 0)
+pico_enable_stdio_uart(PicoAPRSTracker 0)
+pico_enable_stdio_usb(PicoAPRSTracker 1)
 
 # Add the standard library to the build
-target_link_libraries(PicoAPRSTracker pico_stdlib)
-
-# Add any user requested libraries
-target_link_libraries(PicoAPRSTracker
-        hardware_clocks
-        )
+target_link_libraries(PicoAPRSTracker pico_stdlib pico_util pico_multicore hardware_rtc)
 
 pico_add_extra_outputs(PicoAPRSTracker)
 
