@@ -1881,23 +1881,19 @@ CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/s
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/common/pico_time/include/pico/time.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2040/hardware_regs/include/hardware/platform_defs.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2040/hardware_regs/include/hardware/regs/addressmap.h
-CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2040/hardware_regs/include/hardware/regs/dreq.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2040/hardware_regs/include/hardware/regs/sio.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2040/hardware_regs/include/hardware/regs/timer.h
-CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2040/hardware_regs/include/hardware/regs/uart.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2040/hardware_structs/include/hardware/structs/timer.h
-CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2040/hardware_structs/include/hardware/structs/uart.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/cmsis/include/cmsis/rename_exceptions.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/hardware_base/include/hardware/address_mapped.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/hardware_sync/include/hardware/sync.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/hardware_timer/include/hardware/timer.h
-CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/hardware_uart/include/hardware/uart.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/pico_platform/include/pico/platform.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/pico_printf/include/pico/printf.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/include/pico/stdio.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/include/pico/stdio/driver.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c
-CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/pico_stdio_uart/include/pico/stdio_uart.h
+CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/pico_stdio_usb/include/pico/stdio_usb.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: generated/pico_base/pico/config_autogen.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj: generated/pico_base/pico/version.h
 
@@ -2177,7 +2173,7 @@ CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdlib/
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/hardware_uart/include/hardware/uart.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/pico_platform/include/pico/platform.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/include/pico/stdio.h
-CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/pico_stdio_uart/include/pico/stdio_uart.h
+CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/pico_stdio_usb/include/pico/stdio_usb.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj: /home/pi/pico/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj: generated/pico_base/pico/config_autogen.h
 CMakeFiles/PicoAPRSTracker.dir/home/pi/pico/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj: generated/pico_base/pico/version.h
@@ -2244,6 +2240,7 @@ CMakeFiles/PicoAPRSTracker.dir/PicoAPRSTracker.cpp.obj: /home/pi/pico/pico-sdk/s
 CMakeFiles/PicoAPRSTracker.dir/PicoAPRSTracker.cpp.obj: /home/pi/pico/pico-sdk/src/rp2_common/pico_stdio_usb/include/pico/stdio_usb.h
 CMakeFiles/PicoAPRSTracker.dir/PicoAPRSTracker.cpp.obj: ../PicoAPRSTracker.cpp
 CMakeFiles/PicoAPRSTracker.dir/PicoAPRSTracker.cpp.obj: ../ez_cpp_utils.h
+CMakeFiles/PicoAPRSTracker.dir/PicoAPRSTracker.cpp.obj: ../uikissutils.h
 CMakeFiles/PicoAPRSTracker.dir/PicoAPRSTracker.cpp.obj: generated/pico_base/pico/config_autogen.h
 CMakeFiles/PicoAPRSTracker.dir/PicoAPRSTracker.cpp.obj: generated/pico_base/pico/version.h
 

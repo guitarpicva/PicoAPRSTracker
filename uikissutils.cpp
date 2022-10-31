@@ -125,23 +125,25 @@ std::string UIKISSUtils::kissWrapCommand(const std::string val, const unsigned c
      * for KISS hosts that allow RAW text, the text will simply be ASCII chars.
      *
      * @param in - input array representation an AX.25 frame to be wrapped in KISS
-     * @return - returns int[] of unwrapped AX.25 UI frame or RAW ASCII
+     * @return - returns std::string of unwrapped AX.25 UI frame or RAW ASCII
      */
 std::string UIKISSUtils::kissUnwrap(const std::string in)
 {
     // John Langner's way fromn Direwolf 1.2
-    int olen = 0;
+    std::string out;
+    //int olen = 0;
     int ilen = in.length();
+    printf("\nilen: %d", ilen);
     int j;
     bool escaped_mode = false;
 
     // Output array length will be less than input array length because we
     // are removing at least two FEND's
     //int[] out = new int[ilen];
-    std::string out = "";
     if (ilen < 2) {
         /* Need at least the "type indicator" char and FEND. */
         /* Probably more. */
+        printf("\nEMPTY FRAME!");
         return out; // empty byte array indicates error
     }
     // If the last char is c0 (FEND), (which it properly should be) don't worry
@@ -151,8 +153,10 @@ std::string UIKISSUtils::kissUnwrap(const std::string in)
     }
     else {
         //qDebug() << "KISS frame should end with FEND.";
-        return "";
+        printf("\nNO FEND on the END!");
+        return out; // fail is returning empty std::string
     }
+    //printf("\nilen adj:%d\n", ilen); // good
     // If the opening char is c0 (FEND) then we don't need to start
     // processing there either, so only deal with the actual AX.25 frame
     // contents.
@@ -164,13 +168,16 @@ std::string UIKISSUtils::kissUnwrap(const std::string in)
         // glued together, so start at zero.
         j = 0;
     }
-
+    //printf("j:%d\n", j);
     for (; j < ilen; j++) {
+        //printf("%02x\n", in[j]);
         // According to the KISS spec, no un-escaped FEND's in the middle of
         // the AX.25 frame characters.
         if (in[j] == FEND) {
             //qDebug() << "KISS frame should not have FEND in the middle.";
-            return "";
+            printf("\nUNESCAPED FEND!");
+            out.clear();
+            return out;
         }
         // Escaped mode means we found a FESC down below in the else if and
         // need to remove the following TFEND or TFESC character in the next
@@ -178,19 +185,23 @@ std::string UIKISSUtils::kissUnwrap(const std::string in)
         if (escaped_mode) {
             if (in[j] == TFESC) {
                 // Replace TFESC with FESC in output
-                out[olen++] = FESC;
+                //out[olen++] = FESC;
+                out.append(1, FESC);
             }
             else if (in[j] == TFEND) {
                 // Replace TFEND with FEND in output
-                out[olen++] = FEND;
+                //out[olen++] = FEND;
+                out.append(1, FEND);
             }
             else {
                 // If we had a FESC and it was not followed by a TFEND or a
                 // TFESC, then that's an error.
                 //qDebug() << "KISS protocol error.  Found ";
-                //System.err.printf("%02x ", in[j]);
+                //printf("%02x ", in[j]);
                 //System.err.println("after " + FESC);
-                return "";
+                printf("\nESCAPE with no TFEND/TFESC!");
+                out.clear();
+                return out;
             }
             escaped_mode = false;
         }
@@ -202,11 +213,14 @@ std::string UIKISSUtils::kissUnwrap(const std::string in)
         else {
             // Otherwise, it's a normal character so write it to the output
             // array.
-            out[olen++] = in[j];
+            //out[olen++] = in[j];
+            out.append(1, in[j]);
+            //printf("%s\n", out.c_str());            
         }
     }
     if (out[0] == '\0')
-        return out.substr(1); // remove leading NULL
+        out.erase(0, 1); // remove leading NULL
+    printf("\nout:%s\n", out.c_str());
     return out;
 }
 
@@ -259,8 +273,8 @@ std::string UIKISSUtils::buildUIFrame(std::string dest_call, std::string source_
         out.append(1, val);
     }
 
-    // SOURCE Call sign
-    D_SSID = 0;
+    // SOURCE Call sign processing
+    D_SSID = 0; // start with SSID of 0
 
     // use an iterator to erase all parts (2)
     parts.erase(parts.begin(), parts.end()); // clear the vector, but probably not necesssary??????

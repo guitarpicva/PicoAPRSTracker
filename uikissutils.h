@@ -1,13 +1,13 @@
 #ifndef UIKISSUTILS_H
 #define UIKISSUTILS_H
 
-#include <vector>
+//#include <vector>
 #include <string>
 
 class UIKISSUtils
 {
 public:
-    explicit UIKISSUtils();
+    // explicit UIKISSUtils();
     /**
      * Convenience variables holding the value "UICHAT" and the chosen SSID
      * character, not currently used!
@@ -33,20 +33,20 @@ public:
     /**
      * The KISS "FEND" (frame end) character. One at each end of a KISS frame
      */
-    const static char FEND = 0xC0;
+    static const char FEND = 0xC0;
     /**
      * The KISS "FESC" (frame escape) character. Used to escape "FEND" inside a
      * KISS frame.
      */
-    const static char FESC = 0xDB;
+    static const char FESC = 0xDB;
     /**
      * The KISS "TFEND" character.
      */
-    const static char TFEND = 0xDC;
+    static const char TFEND = 0xDC;
     /**
      * The KISS "TFESC" character.
      */
-    const static char TFESC = 0xDD;
+    static const char TFESC = 0xDD;
 
     static std::string kissWrap(const std::string in);
     static std::string kissWrapCommand(const std::string val, const unsigned char cmdCode);

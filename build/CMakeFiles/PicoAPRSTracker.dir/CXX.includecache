@@ -269,11 +269,17 @@ vector
 -
 ez_cpp_utils.h
 /home/pi/src/PicoAPRSTracker/ez_cpp_utils.h
+uikissutils.h
+/home/pi/src/PicoAPRSTracker/uikissutils.h
 
 /home/pi/src/PicoAPRSTracker/ez_cpp_utils.h
 string
 -
 vector
+-
+
+/home/pi/src/PicoAPRSTracker/uikissutils.h
+string
 -
 
 generated/pico_base/pico/config_autogen.h
