@@ -167,7 +167,7 @@ void handleGPSData() {
         p.londir = vic[6];
         p.speed = vic[7]; // float knots
         p.course = vic[8]; // float degrees
-        printf("\rGPS Fix:%s Lat:%s%s Lon:%s%s Course:x%sx Speed:%s", p.fix.c_str(),p.lat.c_str(),p.latdir.c_str(),p.lon.c_str(),p.londir.c_str(),p.course.c_str(),p.speed.c_str());
+        //printf("\rGPS Fix:%s Lat:%s%s Lon:%s%s Course:%s Speed:%s", p.fix.c_str(),p.lat.c_str(),p.latdir.c_str(),p.lon.c_str(),p.londir.c_str(),p.course.c_str(),p.speed.c_str());
         // update rtc if necessary
         if(p.fix == "A" && (b_rtcUpdated == false)) { // we have a fix and the clock is stale
           // update Pico RTC clock
@@ -220,7 +220,7 @@ void handleGPSData() {
         }
         else {
           val = p.course.substr(0, p.course.find('.'));
-          printf("course val:%s %d\n", val.c_str(), val.length());
+          //printf("course val:%s %d\n", val.c_str(), val.length());
           int times = (3 - val.length())          ;
           val.insert(0, times, '0');
           mypos += val;
@@ -229,11 +229,11 @@ void handleGPSData() {
         val.clear();
         if(p.speed.length() == 0) {
           mypos += "000";
-          printf("speed empty!");
+          //printf("speed empty!");
         }
         else {
           val = p.speed.substr(0, p.speed.find('.'));
-          printf("speed val:%s %d %d\n", val.c_str(), val.length(), (3 - val.length()));
+          //printf("speed val:%s %d %d\n", val.c_str(), val.length(), (3 - val.length()));
           int times = (3 - val.length())          ;
           val.insert(0,  times, '0');
           mypos += val;
