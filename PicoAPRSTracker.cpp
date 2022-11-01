@@ -130,8 +130,8 @@ void handleGPSData() {
       std::string gprmcsentence = gpsdata.substr(gprmc, endex - gprmc);
       //printf("%s\n", gprmcsentence.c_str());
       std::vector<std::string> vic;
-      split(gprmcsentence, vic, ',');
-       //for(int i = 0; i < vic.size(); i++) {
+      split(gprmcsentence, vic, ',', true);
+      //  for(int i = 0; i < vic.size(); i++) {
       //    printf("%d: %s\n", i, (vic[i]).c_str());
       //  }
       //  printf("\n");
@@ -150,7 +150,7 @@ void handleGPSData() {
       }
       bool check = (crc == g_crc);
       //$GPRMC,220516,A,5133.82,N,00042.24,W,173.8,231.8,130694,004.2,W*70
-      //         1    2    3    4    5     6    7    8      9     10  11 12
+      //   0     1    2    3    4    5     6    7    8      9     10  11 12
       if(check) {
         //printf("%s CRC:%X\r", gprmcsentence.c_str(), crc);      // OK! that works
         t.hour  = (int8_t)std::stoi(vic[1].substr(0, 2));
@@ -163,11 +163,11 @@ void handleGPSData() {
         p.fix = vic[2];
         p.lat = vic[3].substr(0, 7); // for APRS format
         p.latdir = vic[4];
-        p.lon = vic[5].substr(0,8); // for APRS format
+        p.lon = vic[5].substr(0, 8); // for APRS format
         p.londir = vic[6];
-        p.speed = vic[7]; // float
-        p.course = vic[8]; // float
-        //printf("\rGPS Fix:%s Lat:%s%s Lon:%s%s Speed:%s Course:%s", p.fix.c_str(),p.lat.c_str(),p.latdir.c_str(),p.lon.c_str(),p.londir.c_str(),p.speed.c_str(),p.course.c_str());
+        p.speed = vic[7]; // float knots
+        p.course = vic[8]; // float degrees
+        printf("\rGPS Fix:%s Lat:%s%s Lon:%s%s Course:x%sx Speed:%s", p.fix.c_str(),p.lat.c_str(),p.latdir.c_str(),p.lon.c_str(),p.londir.c_str(),p.course.c_str(),p.speed.c_str());
         // update rtc if necessary
         if(p.fix == "A" && (b_rtcUpdated == false)) { // we have a fix and the clock is stale
           // update Pico RTC clock
@@ -206,22 +206,38 @@ void handleGPSData() {
         mypos += std::to_string((int)t.hour);
         if(t.min < 10) mypos += "0";
         mypos += std::to_string((int)t.min);
-        mypos += "z";
+        mypos += 'z';
         mypos += p.lat;
         mypos += p.latdir;
-        mypos += "/";
+        mypos += '/';
         mypos += p.lon;
         mypos += p.londir;
-        mypos += ">";
-        if(p.course.empty())
+        mypos += '>';
+        std::string val; // temp var
+        if(p.course.length() == 0) {
           mypos += "000";
-        else
-          mypos += p.course;
-          mypos += "/";
-        if(p.speed.empty())
-          mypos += p.speed;
-        else
+          //printf("course empty!");
+        }
+        else {
+          val = p.course.substr(0, p.course.find('.'));
+          printf("course val:%s %d\n", val.c_str(), val.length());
+          int times = (3 - val.length())          ;
+          val.insert(0, times, '0');
+          mypos += val;
+        }
+        mypos += '/';
+        val.clear();
+        if(p.speed.length() == 0) {
           mypos += "000";
+          printf("speed empty!");
+        }
+        else {
+          val = p.speed.substr(0, p.speed.find('.'));
+          printf("speed val:%s %d %d\n", val.c_str(), val.length(), (3 - val.length()));
+          int times = (3 - val.length())          ;
+          val.insert(0,  times, '0');
+          mypos += val;
+        }
         mypos += source_addr; // comment for now
         //printf("mypos:%s\n", mypos.c_str());
         // send the beacon

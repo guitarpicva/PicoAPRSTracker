@@ -242,10 +242,6 @@ sys/cdefs.h
 pico/types.h
 /home/pi/pico/pico-sdk/src/rp2_common/pico_platform/include/pico/pico/types.h
 
-/home/pi/pico/pico-sdk/src/rp2_common/pico_standard_link/new_delete.cpp
-cstdlib
--
-
 /home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/include/pico/stdio.h
 pico.h
 /home/pi/pico/pico-sdk/src/rp2_common/pico_stdio/include/pico/pico.h
@@ -281,12 +277,6 @@ string
 -
 vector
 -
-
-/home/pi/src/PicoAPRSTracker/uikissutils.cpp
-uikissutils.h
-/home/pi/src/PicoAPRSTracker/uikissutils.h
-ez_cpp_utils.h
-/home/pi/src/PicoAPRSTracker/ez_cpp_utils.h
 
 /home/pi/src/PicoAPRSTracker/uikissutils.h
 string
