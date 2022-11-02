@@ -13,19 +13,19 @@ std::string UIKISSUtils::kissWrap(const std::string in)
     /**
      * The KISS "FEND" (frame end) character. One at each end of a KISS frame
      */
-    const char FEND = 0xC0;
-    /**
-     * The KISS "FESC" (frame escape) character. Used to escape "FEND" inside a
-     * KISS frame.
-     */
-    const char FESC = 0xDB;
-    /**
-     * The KISS "TFEND" character.
-     */
-    const char TFEND = 0xDC;
-    /**
-     * The KISS "TFESC" character.
-     */
+    // const char FEND = 0xC0;
+    // /**
+    //  * The KISS "FESC" (frame escape) character. Used to escape "FEND" inside a
+    //  * KISS frame.
+    //  */
+    // const char FESC = 0xDB;
+    // /**
+    //  * The KISS "TFEND" character.
+    //  */
+    // const char TFEND = 0xDC;
+    // /**
+    //  * The KISS "TFESC" character.
+    //  */
     const char TFESC = 0xDD;
     // John Langner's way from C in Direwolf 1.2
     // add a few indexes in case there needs to be any

@@ -14,7 +14,7 @@
   
 #define UART_MODEM_TX_PIN 8u
 #define UART_MODEM_RX_PIN 9u
-#define MODEM_BAUD 57600 // for Nino Modem, fixed at 57600
+#define MODEM_BAUD 4800 // for Nino Modem, fixed at 57600
 
 #define UART_GPS_TX_PIN 0u
 #define UART_GPS_RX_PIN 1u
@@ -184,6 +184,7 @@ void handleGPSData() {
           if(!b_59Updated) {
             b_rtcUpdated = rtc_set_datetime(&t);
             printf("\nUpdated RTC: %4d-%02d-%02d %02d:%02d:%02d %d\n", t.year, t.month, t.day, t.hour, t.min, t.sec, b_rtcUpdated);
+            b_59Updated = true;
           }
         }
         else {
@@ -239,7 +240,7 @@ void handleGPSData() {
           mypos += val;
         }
         mypos += source_addr; // comment for now
-        //printf("mypos:%s\n", mypos.c_str());
+        printf("mypos:%s\n", mypos.c_str());
         // send the beacon
         loadOutQueue(UIKISSUtils::kissWrap(UIKISSUtils::buildUIFrame(dest_addr, source_addr, digi1, digi2, mypos)), true);
         b_beaconSent = true;
