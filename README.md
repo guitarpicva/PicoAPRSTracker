@@ -11,3 +11,5 @@ Once the GPS position and time is updated on the Pico's Real Time Clock, it is q
 This means that valid divisor minutes are 2,3,4,5,12,15,20,30 (in practice these are the most useful for APRS beacons).
 
 Code will be added soon to adjust this divisor based on GPS provided speed in the GPRMC sentence of NMEA data.  The faster the device is traveling, the lower the divisor becomes with a floor of 2 minutes.  As the device slows it ramps up the interval divisor to a ceiling of 30 minutes.  Currently working out the appropriate inflection points for the divisor. 
+
+See the ELECTRONICS.md file for hints about how to build the example implementation and connect it to a KISS Packet modem and radio.
