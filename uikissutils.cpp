@@ -130,6 +130,12 @@ std::string UIKISSUtils::kissWrapCommand(const std::string val, const unsigned c
 std::string UIKISSUtils::kissUnwrap(std::string in)
 {
     // First, get rid of junk ahead of the first FEND
+    // TODO: this means we are CHANGING the input parameter!!!!!!!
+    // A better way would be to index the starting point and
+    // do the math for ilen as ilen = in.length() - index
+    // and for j below that ias j = index + 1 or j = index
+    // but since the output is the valuable data, it may
+    // not be emergent to "fix" this
     int end = in.length();
     for(int i = 0; i < end; i++) {
         if(in[i] != FEND)
@@ -445,7 +451,8 @@ std::vector<std::string> UIKISSUtils::unwrapUIFrame(std::string in) {
     //in = {0x82, 0xa0, 0x9e, 0xa8, 0x66, 0x60, 0xe0, 0x96, 0x64, 0xac, 0x92, 0xb4, 0x40, 0xf0, 0xae, 0x68, 0xa4, 0x82, 0xa8, 0x40, 0xea, 0xae, 0x92, 0x88, 0x8a, 0x64, 0x40, 0xe1, 0x03, 0xf0, 0x21, 0x33, 0x37, 0x33, 0x31, 0x2e, 0x30, 0x35, 0x4e, 0x2f, 0x30, 0x37, 0x37, 0x34, 0x34, 0x2e, 0x33, 0x30, 0x57, 0x23, 0x57, 0x32, 0x20, 0x44, 0x49, 0x47, 0x49, 0x20, 0x4d, 0x69, 0x64, 0x6c, 0x6f, 0x74, 0x68, 0x69, 0x61, 0x6e, 0x2f, 0x50, 0x6f, 0x77, 0x68, 0x61, 0x74, 0x61, 0x6e};
     // END TEST FODDER
     //printf("in:%s\n", in.c_str());
-    std::vector<std::string> out(5); // dest,src,digi1,digi2,payload
+    //                                            opt   opt    opt
+    std::vector<std::string> out(6); // dest,src,digi1,digi2,xtradigi,payload
     // burn thru the 4 call signs and the payload and assign them as
     // [0]=dest, [1]=source, [2]=digi1, [3]=digi2, [4]=payload
     char b;
@@ -486,11 +493,15 @@ std::vector<std::string> UIKISSUtils::unwrapUIFrame(std::string in) {
             //printf("[%02d] %c\n", i, (int) b);
             i++;
         }
-        
+        bool h = false; // the has been repeated bit for repeaters only
         c = in[i] & 0x01;
+        //h = in[i] & 0x80; // bit 7 0 = not repeated, 1 = this station repeated it
+        h = in[i] > 127;
         b = (in[i] >> 1) & 0x0F;
         out[2].append(1, '-');
         out[2].append(std::to_string((int) b));
+        //if(h > 127) out[2].append(1,'*');
+        if(h) out[2].append(1, '*');
         //printf("[%02d] %d\n", i, b);
         if(c == 0x00) { // there is a second digi to follow
             // DIGI2
@@ -502,18 +513,37 @@ std::vector<std::string> UIKISSUtils::unwrapUIFrame(std::string in) {
                 //printf("[%02d] %c\n", i, (int) b);
                 i++;
             }
+            c = in[i] & 0x01;
+            h = in[i] > 127;
             b = (in[i] >> 1) & 0x0F;
             out[3].append(1, '-');
             out[3].append(std::to_string((int) b));
+            if(h) out[3].append(1, '*');
             //printf("[%02d] %d\n", i, b);
+            if(c == 0x00) { // one more detail "digi"?
+                i++;
+                end = i + 6;
+                while (i < end) {
+                    b = in[i] >> 1;
+                    out[4].append(1, b);
+                    //printf("[%02d] %c\n", i, (int) b);
+                    i++;
+                }
+                c = in[i] & 0x01;
+                h = in[i] > 127;
+                b = (in[i] >> 1) & 0x0F;
+                out[4].append(1, '-');
+                out[4].append(std::to_string((int) b));
+                if(h) out[4].append(1, '*');
+            }
         }
     }
 
-    i+=3; // skip past the previously read SSID byte and the 0x03 0xF0 bytes
+    i+=3; // skip past the previously read SSID byte and the 0x03 0xF0 Control and PID bytes
     end = in.length();
     // The payload is all the rest
     while(i < end) {
-        out[4].append(1, in[i]);
+        out[5].append(1, in[i]);
         i++;
     }
 
