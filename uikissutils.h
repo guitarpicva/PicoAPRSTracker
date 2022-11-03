@@ -1,7 +1,7 @@
 #ifndef UIKISSUTILS_H
 #define UIKISSUTILS_H
 
-//#include <vector>
+#include <vector>
 #include <string>
 
 class UIKISSUtils
@@ -50,9 +50,10 @@ public:
 
     static std::string kissWrap(const std::string in);
     static std::string kissWrapCommand(const std::string val, const unsigned char cmdCode);
-    static std::string kissUnwrap(const std::string in);
+    static std::string kissUnwrap(std::string in);
     static std::string buildUIFrame(
         std::string dest_call, std::string source_call, std::string digi1 = std::string(), std::string digi2 = std::string(), std::string text = std::string());
+    static std::vector<std::string> unwrapUIFrame(std::string in);
 };
 
 #endif // UIKISSUTILS_H

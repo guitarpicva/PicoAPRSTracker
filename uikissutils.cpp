@@ -127,13 +127,21 @@ std::string UIKISSUtils::kissWrapCommand(const std::string val, const unsigned c
      * @param in - input array representation an AX.25 frame to be wrapped in KISS
      * @return - returns std::string of unwrapped AX.25 UI frame or RAW ASCII
      */
-std::string UIKISSUtils::kissUnwrap(const std::string in)
+std::string UIKISSUtils::kissUnwrap(std::string in)
 {
+    // First, get rid of junk ahead of the first FEND
+    int end = in.length();
+    for(int i = 0; i < end; i++) {
+        if(in[i] != FEND)
+            in.erase(0, 1);
+        else
+            break; // found the first FEND
+    }
     // John Langner's way fromn Direwolf 1.2
     std::string out;
     //int olen = 0;
     int ilen = in.length();
-    printf("\nilen: %d", ilen);
+    //printf("\nilen: %d", ilen);
     int j;
     bool escaped_mode = false;
 
@@ -218,9 +226,9 @@ std::string UIKISSUtils::kissUnwrap(const std::string in)
             //printf("%s\n", out.c_str());            
         }
     }
-    if (out[0] == '\0')
-        out.erase(0, 1); // remove leading NULL
-    printf("\nout:%s\n", out.c_str());
+   if (out[0] == 0x00)
+       out.erase(0, 1); // remove leading NULL
+    //printf("\nout:%s\n", out.c_str() + 1);
     return out;
 }
 
@@ -428,5 +436,88 @@ std::string UIKISSUtils::buildUIFrame(std::string dest_call, std::string source_
         out.append(1, (unsigned char) msg[i]);
     }
     //qDebug() << "OUT:" << out;
+    return out;
+}
+
+std::vector<std::string> UIKISSUtils::unwrapUIFrame(std::string in) {
+    // TEST FODDER
+    //printf("Unwrap UI Frame...\n");
+    //in = {0x82, 0xa0, 0x9e, 0xa8, 0x66, 0x60, 0xe0, 0x96, 0x64, 0xac, 0x92, 0xb4, 0x40, 0xf0, 0xae, 0x68, 0xa4, 0x82, 0xa8, 0x40, 0xea, 0xae, 0x92, 0x88, 0x8a, 0x64, 0x40, 0xe1, 0x03, 0xf0, 0x21, 0x33, 0x37, 0x33, 0x31, 0x2e, 0x30, 0x35, 0x4e, 0x2f, 0x30, 0x37, 0x37, 0x34, 0x34, 0x2e, 0x33, 0x30, 0x57, 0x23, 0x57, 0x32, 0x20, 0x44, 0x49, 0x47, 0x49, 0x20, 0x4d, 0x69, 0x64, 0x6c, 0x6f, 0x74, 0x68, 0x69, 0x61, 0x6e, 0x2f, 0x50, 0x6f, 0x77, 0x68, 0x61, 0x74, 0x61, 0x6e};
+    // END TEST FODDER
+    //printf("in:%s\n", in.c_str());
+    std::vector<std::string> out(5); // dest,src,digi1,digi2,payload
+    // burn thru the 4 call signs and the payload and assign them as
+    // [0]=dest, [1]=source, [2]=digi1, [3]=digi2, [4]=payload
+    char b;
+    int i = 0, end = 6;
+    // DEST
+    while (i < end) {
+        b = in[i] >> 1;
+        //printf("[%02d] %c\n", i, (int) b);
+        out[0].append(1, b);
+        i++;
+    }
+    b = (in[i] >> 1) & 0x0F;
+    out[0].append(1, '-');
+    out[0].append(std::to_string((int) b));
+    //printf("[%02d] %d\n", i, b);
+
+    // SOURCE
+    i++;
+    end = i + 6;
+    while (i < end) {
+        b = in[i] >> 1;
+        out[1].append(1, b);
+        //printf("[%02d] %c\n", i, (int) b);
+        i++;
+    }
+    int c = in[i] & 0x01; // if there is a continuation bit
+    b = (in[i] >> 1) & 0x0F;
+    out[1].append(1, '-');
+    out[1].append(std::to_string((int) b));
+        //printf("[%02d] %d\n", i, b);
+    if(c == 0x00) { // there is at least one Digi to follow            
+        // DIGI1
+        i++;    
+        end = i + 6;
+        while (i < end) {
+            b = in[i] >> 1;
+            out[2].append(1, b);
+            //printf("[%02d] %c\n", i, (int) b);
+            i++;
+        }
+        
+        c = in[i] & 0x01;
+        b = (in[i] >> 1) & 0x0F;
+        out[2].append(1, '-');
+        out[2].append(std::to_string((int) b));
+        //printf("[%02d] %d\n", i, b);
+        if(c == 0x00) { // there is a second digi to follow
+            // DIGI2
+            i++;
+            end = i + 6;
+            while (i < end) {
+                b = in[i] >> 1;
+                out[3].append(1, b);
+                //printf("[%02d] %c\n", i, (int) b);
+                i++;
+            }
+            b = (in[i] >> 1) & 0x0F;
+            out[3].append(1, '-');
+            out[3].append(std::to_string((int) b));
+            //printf("[%02d] %d\n", i, b);
+        }
+    }
+
+    i+=3; // skip past the previously read SSID byte and the 0x03 0xF0 bytes
+    end = in.length();
+    // The payload is all the rest
+    while(i < end) {
+        out[4].append(1, in[i]);
+        i++;
+    }
+
+    printf("%s > %s , %s , %s\n%s\n", out[1].c_str(), out[0].c_str(), out[2].c_str(), out[3].c_str(), out[4].c_str());
+
     return out;
 }

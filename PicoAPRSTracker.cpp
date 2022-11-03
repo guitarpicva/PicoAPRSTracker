@@ -14,7 +14,7 @@
   
 #define UART_MODEM_TX_PIN 8u
 #define UART_MODEM_RX_PIN 9u
-#define MODEM_BAUD 4800 // for Nino Modem, fixed at 57600
+#define MODEM_BAUD 4800 // for Nino Modem, fixed at 57600. Coastal Chipworks TNC-X set to 4800/9600 depending on jumpers
 
 #define UART_GPS_TX_PIN 0u
 #define UART_GPS_RX_PIN 1u
@@ -65,8 +65,8 @@ std::string gpsdata; // the buffer for the function running on core1
 
 const std::string dest_addr = "APPICO-0"; // SSID is always 0 in APRS
 const std::string source_addr = "AB4MW-12"; // for tracker boxes use SSID 12
-const std::string digi1 = "WIDE1-1";
-const std::string digi2 = "WIDE2-2";
+const std::string digi1 = "WIDE1-1"; // default APRS first digi
+const std::string digi2 = "WIDE2-1"; // default APRS second digi
 int i_interval = 2; // start with one (2) minute interval and adjust based on gps speed
 
 void loadOutQueue(std::string toSend, bool truncate) {
@@ -277,7 +277,7 @@ void loop() {
     //printf("READ MODEM");
     // read the byte, store it and look out for "\r" (0x0D)
     inbyte = uart_getc(MODEM);
-    printf("\n%0x", inbyte); // ok that works
+    //printf("%02x ", inbyte); // ok that works
     if(reply.empty() && (inbyte == 0x00)) {continue;} // startup seems to send a NULL
     reply.append(1, inbyte);
     //printf("\nReply size:%02d", reply.length());
@@ -298,10 +298,19 @@ void loop() {
       // }
 
       std::string kiss = UIKISSUtils::kissUnwrap(reply);
-      //printf("\nKISS len: %d\n", kiss.length());
+      printf("\nKISS len: %d\n", kiss.length());
       for(int i = 1; i < kiss.length(); i++) {
         printf("%02x ", kiss.at(i));
       }
+      if(kiss.length() > 0) {
+      std::vector<std::string> partz = UIKISSUtils::unwrapUIFrame(kiss);
+      printf("\nDest   :%s\n", partz[0].c_str());
+      printf("Source :%s\n", partz[1].c_str());
+      printf("Digi1  :%s\n", partz[2].c_str());
+      printf("Digi2  :%s\n", partz[3].c_str());
+      printf("Payload:%s\n", partz[4].c_str());
+      }
+      //printf("%s>%s,%s,%s\n%s", partz[1].c_str(), partz[0].c_str(), partz[2].c_str(), partz[3].c_str(), partz[4].c_str());
     }
     reply.clear();
   }
@@ -376,6 +385,9 @@ int main() {
   b_rtcUpdated = false;
   multicore_launch_core1(handleGPSData);
   sleep_ms(2500); // let core1 get settled
+  // TEST
+  //UIKISSUtils::unwrapUIFrame("");
+  // END TEST
   // merrily we roll along  
   while(true) {loop();}
 }

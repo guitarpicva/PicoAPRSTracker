@@ -1,6 +1,9 @@
 Pico APRS Tracker
 
-A Pico SDK project to demonstrate using the real time clock which is disciplined by a GPS receiver module managed over a UART connection. This tracker keeps it's position by reading the GPS position and time data via UART0.  A KISS Packet modem is connected to the Pico via UART1 (along with an appropriate converter module to RS-232 as required).
+A Pico SDK project to demonstrate using the real time clock which is disciplined by a GPS receiver module managed over a UART connection. It also demonstrates using the second core
+of the Pico to run the GPS NMEA sentence evaluation and RTC updates.
+
+This tracker keeps it's position by reading the GPS position and time data via UART0.  A KISS Packet modem is connected to the Pico via UART1 (along with an appropriate converter module to RS-232 as required).
 
 Pico APRS Tracker is shared in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
