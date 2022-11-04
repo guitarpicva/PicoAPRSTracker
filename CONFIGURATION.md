@@ -10,11 +10,11 @@ The code enables the USB as a stdio so debug trace and configuration can occur v
 
 !!!When the USB is connected ALTERNATE POWER SOURCES SHOULD NOT BE USED!!!
 
+See the RPi Pico documentation for power requirements and alternate ways to dual-power the device.
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-See the RPi Pico documentation for power requirements and alternate ways to dual-power the device.
 
 Connect the serial terminal to the Serial port that is created when the Pico is plugged into the computer.  The settings should be 115200 baud 8N1 with no flow control.
 
