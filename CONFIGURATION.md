@@ -1,4 +1,4 @@
-#How to configure the Pico APRS Tracker via USB
+# How to configure the Pico APRS Tracker via USB
 
 WARNING: Do not connect the USB cable to the Pico until you have read the entire document.
 
@@ -20,6 +20,7 @@ Connect the serial terminal to the Serial port that is created when the Pico is 
 
 Once the USB is connected to the serial terminal (PuTTY, minicom, gtkterm, etc.) trace from the running code should appear in the terminal.  You should see incoming packets from your KISS modem that are decoded for content and other information from the running program.  As the program matures, much of this information will be stopped in order to save resources for the running program.
 
+# How to read and change the configuration
 There are currently two commands read from the terminal by the program.
 1) "READCONFIG|"
 2) "WRITECONFIG|<source>|<digi1>|<digi1>|<comment>|<interval in min.>|<APRS symbol character>"
