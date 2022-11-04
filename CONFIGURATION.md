@@ -40,6 +40,6 @@ The configuration code is in early stages with little in the way of sanity or er
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-Please be extra careful how the string is created and  note that ALL fields are required!
+Please be extra careful how the string is created and  note that ALL six (6) fields are required!
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
