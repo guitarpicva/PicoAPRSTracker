@@ -5,10 +5,15 @@ WARNING: Do not connect the USB cable to the Pico until you have read the entire
 The code enables the USB as a stdio so debug trace and configuration can occur via the Pico's USB port and a serial terminal program.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 !!!When the USB is connected ALTERNATE POWER SOURCES SHOULD NOT BE USED!!!
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 See the RPi Pico documentation for power requirements and alternate ways to dual-power the device.
 
 Connect the serial terminal to the Serial port that is created when the Pico is plugged into the computer.  The settings should be 115200 baud 8N1 with no flow control.
@@ -26,7 +31,11 @@ When the READCONFIG| command is sent, the Pico will read it's configuration valu
 When the WRITECONFIG|... command is sent, the Pico will parse the rest of the line and write that to the Flash memory of the device, then immediately read those values back and apply them to the running program.  
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 The configuration code is in early stages with little in the way of sanity or error checking.  
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 Please be extra careful how the string is created and  note that ALL fields are required!
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
