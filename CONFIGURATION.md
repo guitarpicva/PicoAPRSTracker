@@ -34,6 +34,10 @@ When the READCONFIG| command is sent, the Pico will read it's configuration valu
 
 When the WRITECONFIG|... command is sent, the Pico will parse the rest of the line and write that to the Flash memory of the device, then immediately read those values back and apply them to the running program.  
 
+Once this has been accomplished, watch the trace in the serial terminal for a while until your system sends a beacon UI frame.  The trace will display something like:
+
+```Sending:/042016z3257.11N/07940.47Wj000/000github guitarpicva/PicoAPRSTracker```
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 The configuration code is in early stages with little in the way of sanity or error checking.  
