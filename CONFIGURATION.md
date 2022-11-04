@@ -22,10 +22,13 @@ Once the USB is connected to the serial terminal (PuTTY, minicom, gtkterm, etc.)
 
 # How to read and change the configuration
 There are currently two commands read from the terminal by the program.
+
+```
 1) "READCONFIG|"
 2) "WRITECONFIG|source|digi1|digi2|comment|interval in min.|APRS symbol character"
 
 i.e WRITECONFIG|AB4MW-12|WIDE1-1|WIDE2-1|github guitarpicva/PicoAPRSTracker|4|j
+```
 
 When the READCONFIG| command is sent, the Pico will read it's configuration values which have been stored in the Flash memory of the device and apply them to the running program.
 
