@@ -2228,6 +2228,7 @@ CMakeFiles/PicoAPRSTracker.dir/PicoAPRSTracker.cpp.obj: /home/pi/pico/pico-sdk/s
 CMakeFiles/PicoAPRSTracker.dir/PicoAPRSTracker.cpp.obj: /home/pi/pico/pico-sdk/src/rp2040/hardware_structs/include/hardware/structs/uart.h
 CMakeFiles/PicoAPRSTracker.dir/PicoAPRSTracker.cpp.obj: /home/pi/pico/pico-sdk/src/rp2_common/cmsis/include/cmsis/rename_exceptions.h
 CMakeFiles/PicoAPRSTracker.dir/PicoAPRSTracker.cpp.obj: /home/pi/pico/pico-sdk/src/rp2_common/hardware_base/include/hardware/address_mapped.h
+CMakeFiles/PicoAPRSTracker.dir/PicoAPRSTracker.cpp.obj: /home/pi/pico/pico-sdk/src/rp2_common/hardware_flash/include/hardware/flash.h
 CMakeFiles/PicoAPRSTracker.dir/PicoAPRSTracker.cpp.obj: /home/pi/pico/pico-sdk/src/rp2_common/hardware_gpio/include/hardware/gpio.h
 CMakeFiles/PicoAPRSTracker.dir/PicoAPRSTracker.cpp.obj: /home/pi/pico/pico-sdk/src/rp2_common/hardware_irq/include/hardware/irq.h
 CMakeFiles/PicoAPRSTracker.dir/PicoAPRSTracker.cpp.obj: /home/pi/pico/pico-sdk/src/rp2_common/hardware_rtc/include/hardware/rtc.h

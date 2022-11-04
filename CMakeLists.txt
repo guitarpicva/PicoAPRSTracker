@@ -28,7 +28,7 @@ pico_enable_stdio_uart(PicoAPRSTracker 0)
 pico_enable_stdio_usb(PicoAPRSTracker 1)
 
 # Add the standard library to the build
-target_link_libraries(PicoAPRSTracker pico_stdlib pico_util pico_multicore hardware_rtc)
+target_link_libraries(PicoAPRSTracker pico_stdlib pico_util pico_multicore hardware_flash hardware_sync hardware_rtc)
 
 pico_add_extra_outputs(PicoAPRSTracker)
 

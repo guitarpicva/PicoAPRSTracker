@@ -253,10 +253,8 @@ std::string UIKISSUtils::buildUIFrame(std::string dest_call, std::string source_
     std::string out; // output buffer
     // Destination call sign SSID evaluation
     int D_SSID = 0;
-    // NEED TO USE OUR SPLIT LIBRARY HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     std::vector<std::string> parts;
     split(dest_call, parts, '-');
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if (parts.size() > 1) // there is an SSID
     {
         D_SSID = atoi(parts.at(1).data());
@@ -332,7 +330,7 @@ std::string UIKISSUtils::buildUIFrame(std::string dest_call, std::string source_
         else {
             val = val | 0x60; // bit mask "01100000", last bit unset since Source address
         }
-        //qDebug() << "MASK SSID:" << Qstd::stri::number(val, 2);
+        //qDebug() << "MASK SSID:" << QString::number(val, 2);
         out.append(1, val);
     } // END Source Call Sign processing
 
@@ -445,16 +443,11 @@ std::string UIKISSUtils::buildUIFrame(std::string dest_call, std::string source_
     return out;
 }
 
-std::vector<std::string> UIKISSUtils::unwrapUIFrame(std::string in) {
-    // TEST FODDER
-    //printf("Unwrap UI Frame...\n");
-    //in = {0x82, 0xa0, 0x9e, 0xa8, 0x66, 0x60, 0xe0, 0x96, 0x64, 0xac, 0x92, 0xb4, 0x40, 0xf0, 0xae, 0x68, 0xa4, 0x82, 0xa8, 0x40, 0xea, 0xae, 0x92, 0x88, 0x8a, 0x64, 0x40, 0xe1, 0x03, 0xf0, 0x21, 0x33, 0x37, 0x33, 0x31, 0x2e, 0x30, 0x35, 0x4e, 0x2f, 0x30, 0x37, 0x37, 0x34, 0x34, 0x2e, 0x33, 0x30, 0x57, 0x23, 0x57, 0x32, 0x20, 0x44, 0x49, 0x47, 0x49, 0x20, 0x4d, 0x69, 0x64, 0x6c, 0x6f, 0x74, 0x68, 0x69, 0x61, 0x6e, 0x2f, 0x50, 0x6f, 0x77, 0x68, 0x61, 0x74, 0x61, 0x6e};
-    // END TEST FODDER
-    //printf("in:%s\n", in.c_str());
+std::vector<std::string> UIKISSUtils::unwrapUIFrame(std::string in) {    
     //                                            opt   opt    opt
-    std::vector<std::string> out(6); // dest,src,digi1,digi2,xtradigi,payload
-    // burn thru the 4 call signs and the payload and assign them as
-    // [0]=dest, [1]=source, [2]=digi1, [3]=digi2, [4]=payload
+    std::vector<std::string> out(6); // dest,src,digi1,digi2,digi3,payload
+    // extract the call signs and the payload and assign them as
+    // [0]=dest, [1]=source, [2]=digi1, [3]=digi2, [4]=digi3, [5]=payload
     char b;
     int i = 0, end = 6;
     // DEST
@@ -547,7 +540,7 @@ std::vector<std::string> UIKISSUtils::unwrapUIFrame(std::string in) {
         i++;
     }
 
-    printf("%s > %s , %s , %s\n%s\n", out[1].c_str(), out[0].c_str(), out[2].c_str(), out[3].c_str(), out[4].c_str());
+    //printf("%s>%s,%s,%s,%s\n%s\n", out[1].c_str(), out[0].c_str(), out[2].c_str(), out[3].c_str(), out[4].c_str(), out[5].c_str());
 
     return out;
 }

@@ -7,7 +7,7 @@ This tracker keeps it's position by reading the GPS position and time data via U
 
 Pico APRS Tracker is shared in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-A small class UIKISSUtils can wrap and unwrap data into/out of KISS frames.  A function to create a valid UI frame for APRS is also included.
+A small class UIKISSUtils can wrap and unwrap data into/out of KISS frames.  A function to create a valid UI frame for APRS is also included.  The function unwrapUIFrame is used to print information about received packets from the KISS modem on UART1.
 
 Once the GPS position and time is updated on the Pico's Real Time Clock, it is queried every second as GPS data is read and if a valid divisor of the current minute out of 60 minutes is reached, an APRS beacon packet is made and sent out of the MODEM UART.
 

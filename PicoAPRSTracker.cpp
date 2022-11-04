@@ -3,6 +3,8 @@
 #include "hardware/uart.h"
 #include "hardware/gpio.h"
 #include "hardware/rtc.h"
+#include "hardware/flash.h" // so we can read and write settings to flash at SETTINGS
+#include "hardware/sync.h" // so we can disable and enable interrupts when flashing
 #include "pico/multicore.h"
 #include <string>
 #include <vector>
@@ -48,6 +50,8 @@ datetime_t t = {
         .sec   = 0
 };
 
+
+
 // current position set to default of no position held (startup condition)
 position_t p = {
     .fix = "V",
@@ -62,12 +66,100 @@ position_t p = {
 std::string outq;  // output byte queue to the MODEM UART
 std::string reply; // input byte queue from the MODEM UART
 std::string gpsdata; // the buffer for the function running on core1
+std::string incmd; // the stdin input string buffer
 
-const std::string dest_addr = "APPICO-0"; // SSID is always 0 in APRS
-const std::string source_addr = "AB4MW-12"; // for tracker boxes use SSID 12
-const std::string digi1 = "WIDE1-1"; // default APRS first digi
-const std::string digi2 = "WIDE2-2"; // default APRS second digi (I use 2-2 in my rural area)
-int i_interval = 2; // start with one (2) minute interval and adjust based on gps speed
+const std::string dest_addr = "APPCO1-0"; // dest SSID is always 0 in APRS
+std::string source_addr = "AB4MW-12"; // for tracker boxes use SSID 12
+std::string digi1 = "WIDE1-1"; // default APRS first digi
+std::string digi2 = "WIDE2-2"; // default APRS second digi (I use 2-2 in my rural area)
+std::string comment = "PicoAPRSTracker"; // the comment from the settings <= 36 chars
+int i_interval = 3; // start with three (3) minute interval and adjust based on gps speed (eventually)
+char c_objchar = '>'; // the object type for the APRS string defaults  to a Car
+
+// write to flash at offset 0x3000000 to allow for storage.
+// this is an OFFSET (from XIP_BASE) used by flash operations functions
+// so the beginning address of the settings area is then XIP_BASE + SETTINGS
+//#define SETTINGS_OFFSET XIP_NOCACHE_NOALLOC_BASE-XIP_BASE
+//#define SETTINGS_OFFSET (256 * 1024)
+// use the final sector in FLASH memory, well away from program code
+#define SETTINGS_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
+
+// pointer to char memory address of configuration data in FLASH memory
+uint8_t *settings = (uint8_t *)(XIP_BASE + SETTINGS_OFFSET); 
+
+// Flash write the new configuration to the FLASH memory.  This
+// action should be followed by a read_config() in a running controller.
+void flash_config(std::string cfg) { // a "|" delimited set of config params
+  printf("FlashLine:%s %d\n", cfg.c_str(), cfg.length());
+  uint pagelen = (cfg.length() + 1) / FLASH_PAGE_SIZE;
+  if(((cfg.length() + 1) % FLASH_PAGE_SIZE) > 0) // only full pages are programmed
+    pagelen++; // add 1 for the partial final page
+  pagelen = pagelen * FLASH_PAGE_SIZE; // number of bytes for the flash_range_program call's length
+  printf("Write Buffer : %d bytes\n", pagelen);
+  uint8_t apage[pagelen]; // total bytes of our number of pages to flash
+  for(int i = 0; i < cfg.length(); i++) {  // load the actual config bytes only
+    apage[i] = (uint8_t)cfg.at(i);
+    printf("%c", apage[i]);
+  }
+  apage[cfg.length()] = 0x00; // c_str terminator for the end of the data marker
+  for(int i = cfg.length() + 1; i < pagelen; i++) {
+    apage[i] = 'Z'; // fill the trailing bytes with z's
+  }
+  // calculate the number of sectors to erase to hold the pages to write
+  uint sectorlen = pagelen / FLASH_SECTOR_SIZE;
+  if((pagelen % FLASH_SECTOR_SIZE) > 0)
+    sectorlen++;  // add a page for a trailer
+  printf("\nSector Count: %d", sectorlen);
+  // stop interrupts and save thier state
+  uint32_t ints = save_and_disable_interrupts();
+  printf("Interrupts Stored");
+  flash_range_erase (SETTINGS_OFFSET, sectorlen); // erase 4096 byte sectors
+  printf("Settings Sectors Erased");
+  flash_range_program(SETTINGS_OFFSET, apage, pagelen); //cfg.length() + 1);
+  printf("Settings Written");
+  restore_interrupts (ints);
+  printf("Interrupts Restored");
+  printf("Finished FLASH write...\n");
+}
+
+void read_config() {
+  // settings is a pointer to the start of the flash where we
+  // stored out settings data
+  printf("\n\nRead Config Address: %02x\n", settings);
+  // for(int i = 0; i < 256; i++)
+  // {
+  //   char inchar = (char) *(settings + i);
+  //   if(inchar == 0x00) {
+  //     //printf("BREAK!");
+  //     break;}
+  //   flash_line.push_back(inchar);
+  // }
+  //uint off = 0;
+  //char inchar = (char) *settings;
+  printf("Read Settings: %s", settings);  
+  // while(inchar != 0x00) { // using a null to cap the end of the string, like c_str()
+  //   //printf("[%d]:%c\n", off, inchar);
+  //   off++;
+  //   flash_line.append(1, inchar);
+  //   inchar = (char) *(settings + off);
+  // }
+  std::string flash_line((char *)settings);
+  printf("\nSettings from FLASH: %s\n", flash_line.c_str());
+  // now our string holds the whole set of config params as string tokens
+  // delimited by '|'
+
+  // tokens are 0:source,1:digi1,2:digi2,3:comment,4:interval,5:object char
+  std::vector<std::string> tokens; // six tokens only
+  split(flash_line, tokens, '|', true);
+  if(tokens.size() > 5) { // allows for more stuff on the end but at least 6 tokens
+    source_addr = tokens[0];
+    digi1 = tokens[1];
+    digi2 = tokens[2];
+    comment = tokens[3];
+    i_interval = atoi(tokens[4].c_str());
+    c_objchar = tokens[5].at(0);
+  }
+}
 
 void loadOutQueue(std::string toSend, bool truncate) {
   //printf("%s", toSend.data());
@@ -80,21 +172,6 @@ void loadOutQueue(std::string toSend, bool truncate) {
   outq += toSend;
   b_sendReady = true;
 }
-
-/* changed to ez_cpp_utils.h instead
-// split on a single char value, keeping empty values as tempty std::string
-static void split(std::string str, std::vector<std::string> &token_v, const char delim)
-{
-  size_t start = str.find_first_not_of(delim), end=start;
-  while (start != std::string::npos && end != std::string::npos){
-      // Find next occurence of delimiter
-      end = str.find(delim, start);
-      // Push back the token found into vector
-      token_v.push_back(str.substr(start, end - start));
-      // Skip all occurences of the delimiter to find new start
-      start = end + 1;
-  }
-} */
 
 void handleGPSData() {
   gpsdata.clear();
@@ -200,7 +277,7 @@ void handleGPSData() {
       if(!b_beaconSent) {// only send once per sending minute
         // /dayhourminzlatDir/lonDir>course/speedcomment
         char *tmp;
-        std::string mypos = "/";
+        std::string mypos = "/"; // time/pos report
         if(t.day < 10) mypos += "0";
         mypos += std::to_string((int)t.day);
         if(t.hour < 10) mypos += "0";
@@ -213,7 +290,7 @@ void handleGPSData() {
         mypos += '/';
         mypos += p.lon;
         mypos += p.londir;
-        mypos += '>';
+        mypos += c_objchar; // user definable in settings
         std::string val; // temp var
         if(p.course.length() == 0) {
           mypos += "000";
@@ -239,8 +316,8 @@ void handleGPSData() {
           val.insert(0,  times, '0');
           mypos += val;
         }
-        mypos += source_addr; // comment for now
-        printf("mypos:%s\n", mypos.c_str());
+        mypos += comment.substr(0, 36); // comment for now but use settings value for comment
+        printf("Sending:%s\n\n", mypos.c_str());
         // send the beacon
         loadOutQueue(UIKISSUtils::kissWrap(UIKISSUtils::buildUIFrame(dest_addr, source_addr, digi1, digi2, mypos)), true);
         b_beaconSent = true;
@@ -259,18 +336,7 @@ void loop() {
   // from this core because they are constantly changing in the other core
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   //printf("Looping...\r");
-  /*
-  // Check GPIO 2 to possibly change channel
-  if(gpio_get(SET_CHANNEL) != b_curr_chan) { 
-    b_curr_chan = gpio_get(SET_CHANNEL);
-    if(b_curr_chan)
-      setFreq(std::string("ALERT HI"));  
-    else
-      setFreq(std::string("ALERT LO"));  
-    printf("\nSet ALERT channel... %s", gpio_get(SET_CHANNEL)?"HI":"LO");    
-  } */
   // Loop through checking the MODEM serial first
-  // For HFA we only care about the minute of hour value from the GPS
   b_fullcmd = false;
   char inbyte='x';
   while(uart_is_readable(MODEM)) {
@@ -303,15 +369,16 @@ void loop() {
       //   printf("%02x ", kiss.at(i));
       // }
       if(kiss.length() > 0) {
-        std::vector<std::string> partz = UIKISSUtils::unwrapUIFrame(kiss);
-        printf("\nDest   :%s\n", partz[0].c_str());
-        printf("Source :%s\n", partz[1].c_str());
-        printf("Digi1  :%s\n", partz[2].c_str());
-        printf("Digi2  :%s\n", partz[3].c_str());
-        printf("Digi3  :%s\n", partz[4].c_str());
-        printf("Payload:%s\n", partz[5].c_str());
+         std::vector<std::string> partz = UIKISSUtils::unwrapUIFrame(kiss);
+      //   printf("\nDest   :%s\n", partz[0].c_str());
+      //   printf("Source :%s\n", partz[1].c_str());
+      //   printf("Digi1  :%s\n", partz[2].c_str());
+      //   printf("Digi2  :%s\n", partz[3].c_str());
+      //   printf("Digi3  :%s\n", partz[4].c_str());
+      //   printf("Payload:%s\n", partz[5].c_str());
+      // }
+      printf("%s>%s,%s,%s,%s\n%s\n\n", partz[1].c_str(), partz[0].c_str(), partz[2].c_str(), partz[3].c_str(), partz[4].c_str(), partz[5].c_str());
       }
-      //printf("%s>%s,%s,%s\n%s", partz[1].c_str(), partz[0].c_str(), partz[2].c_str(), partz[3].c_str(), partz[4].c_str());
     }
     reply.clear();
   }
@@ -327,22 +394,70 @@ void loop() {
     //uart_write_blocking(MODEM, (uint8_t*)outq.data(), outq.length());       
     outq.clear(); // clear the outq for next loop
     b_sendReady = false;
-  }    
+  }  
+
+  // StdIn processing for configuration commands 
+  // start by seeing if any user sdtin input is present
+  b_fullcmd = false; // reused from above
+  inbyte = getchar_timeout_us(50000); // inbyte reused below
+  while(inbyte != 0xff) {
+    incmd.append(1, inbyte);              
+    if(inbyte == 0x0d) {      
+      //printf("iincmd: %s\n", incmd.c_str());
+      b_fullcmd = true;
+      break; // only one line at a time
+
+    }
+    inbyte = getchar_timeout_us(100000);      
+  }
+  if(b_fullcmd) {
+    if((incmd.length() > 0)) { //} && (incmd.find('\r') != std::string::npos)) {
+      printf("\nincmd: %s\n", incmd.c_str());
+      std::vector<std::string> parts;
+      split(incmd, parts, '|', true);
+      // get rid of the carriage return on the end
+      const std::string cmd = parts.at(0); //.substr(0, parts.at(0).length() - 1);
+      printf("StdIn cmd: %s\n", cmd.c_str());
+      if(cmd == std::string("READCONFIG")) {
+        //printf("Read the Config Data from FLASH\n");
+        read_config();
+      }
+      else if(cmd == std::string("WRITECONFIG")) {
+        // Trigger flash write here
+        printf("Trigger the Flash write of the config settings.\n");
+        // may also need to do multicore_reset_core1() followed by
+        printf("Reset core1: %s", incmd.substr(12).c_str());
+        multicore_reset_core1();
+        flash_config(incmd.substr(12));
+        // and finally relaunching multicore_launch_core1(handleGPSData);    
+        sleep_ms(500);
+        read_config();  
+        sleep_ms(500);
+        multicore_launch_core1(handleGPSData);
+        printf("restart core1");
+      }
+    }
+    incmd.clear();
+  }   
 }
 
 int main() {
   stdio_init_all();
   sleep_ms(1000); // give it a sec to catch up before printf's begin
+  //flash_config(std::string("AB4MW-12|WIDE1-1|WIDE2-2|PicoAPRSTracker AB4MW|4|j"));
+  //return 0;
+  read_config();
+  
   // startup stdio on the USB port for trace
   stdio_usb_init();
   while(!stdio_usb_connected()){;}
   printf("USB Connected...\n");
-  //outq = "HELLO";
+  
   // Start the RTC
   rtc_init();
   rtc_set_datetime(&t); // dummy DTG defined at the top!
   // Set up the GPS UART interface on uart0
-  printf("Set up GPS uart connection at %d\n", uart_init(GPS, GPS_BAUD));  //8N1 No flow control std. it seems  
+  printf("Set up GPS uart connection at %d baud\n", uart_init(GPS, GPS_BAUD));  //8N1 No flow control std. it seems  
   printf("GPS uart0 Enabled? %d\n", uart_is_enabled(GPS));  
   // GPS module Pins 0, 1
   gpio_set_function(UART_GPS_TX_PIN, GPIO_FUNC_UART);
@@ -362,12 +477,10 @@ int main() {
   gpio_set_function(UART_MODEM_RX_PIN, GPIO_FUNC_UART);
   sleep_ms(100); //let the MODEM uart1 get settled
   // probably not needed for most KISS modems
-  uart_putc(MODEM, '\r'); // wake up KISS
-  sleep_ms(250);
-  uart_putc(MODEM, '\r');
-  sleep_ms(250);
-  //uart_puts(MODEM, "Hello World\n"); // ok, that works
-  
+  // uart_putc(MODEM, '\r'); // wake up KISS
+  // sleep_ms(250);
+  // uart_putc(MODEM, '\r');
+    
   // TEST
   //rtc_get_datetime(&t);
   //setFreq(std::string("ALERT HI"));  // now doen by GPIO from modem side
@@ -387,7 +500,6 @@ int main() {
   multicore_launch_core1(handleGPSData);
   sleep_ms(2500); // let core1 get settled
   // TEST
-  //UIKISSUtils::unwrapUIFrame("");
   // END TEST
   // merrily we roll along  
   while(true) {loop();}
