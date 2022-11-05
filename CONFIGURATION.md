@@ -46,4 +46,6 @@ The configuration code is in early stages with little in the way of sanity or er
 
 Please be extra careful how the string is created and  note that ALL six (6) fields are required!
 
+The Comment field may be a maximum of 36 characters long according to the APRS spec and will be truncated to that maximum length if required.
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
