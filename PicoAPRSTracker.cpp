@@ -32,7 +32,7 @@ typedef struct {
         std::string speed;
         std::string course;
 } position_t;
-
+bool b_usbConnected = false; // avoid stdio if no USB connected
 bool b_sendReady = false; // flag to trigger sending output data to modem in loop()
 bool b_rtcUpdated = false; // if the clock has been updated at start (of course not!)
 bool b_59Updated = false; // if the 59th minute RTC update has occurred
@@ -90,12 +90,12 @@ uint8_t *settings = (uint8_t *)(XIP_BASE + SETTINGS_OFFSET);
 // Flash write the new configuration to the FLASH memory.  This
 // action should be followed by a read_config() in a running controller.
 void flash_config(std::string cfg) { // a "|" delimited set of config params
-  printf("FlashLine:%s %d\n", cfg.c_str(), cfg.length());
+  if(b_usbConnected) {printf("FlashLine:%s %d\n", cfg.c_str(), cfg.length());}
   uint pagelen = (cfg.length() + 1) / FLASH_PAGE_SIZE;
   if(((cfg.length() + 1) % FLASH_PAGE_SIZE) > 0) // only full pages are programmed
     pagelen++; // add 1 for the partial final page
   pagelen = pagelen * FLASH_PAGE_SIZE; // number of bytes for the flash_range_program call's length
-  printf("Write Buffer : %d bytes\n", pagelen);
+  if(b_usbConnected) {printf("Write Buffer Size: %d bytes\n", pagelen);}
   uint8_t apage[pagelen]; // total bytes of our number of pages to flash
   for(int i = 0; i < cfg.length(); i++) {  // load the actual config bytes only
     apage[i] = (uint8_t)cfg.at(i);
@@ -109,42 +109,44 @@ void flash_config(std::string cfg) { // a "|" delimited set of config params
   uint sectorlen = pagelen / FLASH_SECTOR_SIZE;
   if((pagelen % FLASH_SECTOR_SIZE) > 0)
     sectorlen++;  // add a page for a trailer
-  printf("\nSector Count: %d", sectorlen);
+  //printf("\nSector Count: %d", sectorlen);
   // stop interrupts and save thier state
   uint32_t ints = save_and_disable_interrupts();
-  printf("Interrupts Stored");
+  //printf("Interrupts Stored");
   flash_range_erase (SETTINGS_OFFSET, sectorlen); // erase 4096 byte sectors
-  printf("Settings Sectors Erased");
+  //printf("Settings Sectors Erased");
   flash_range_program(SETTINGS_OFFSET, apage, pagelen); //cfg.length() + 1);
-  printf("Settings Written");
+  //printf("Settings Written");
   restore_interrupts (ints);
-  printf("Interrupts Restored");
-  printf("Finished FLASH write...\n");
+  //printf("Interrupts Restored");
+  if(b_usbConnected) {printf("Finished FLASH write...\n");}
 }
 
 void read_config() {
   // settings is a pointer to the start of the flash where we
   // stored out settings data
-  printf("\n\nRead Config Address: %02x\n", settings);
-  // for(int i = 0; i < 256; i++)
-  // {
-  //   char inchar = (char) *(settings + i);
-  //   if(inchar == 0x00) {
-  //     //printf("BREAK!");
-  //     break;}
-  //   flash_line.push_back(inchar);
-  // }
-  //uint off = 0;
-  //char inchar = (char) *settings;
-  printf("Read Settings: %s", settings);  
-  // while(inchar != 0x00) { // using a null to cap the end of the string, like c_str()
-  //   //printf("[%d]:%c\n", off, inchar);
-  //   off++;
-  //   flash_line.append(1, inchar);
-  //   inchar = (char) *(settings + off);
-  // }
   std::string flash_line((char *)settings);
-  printf("\nSettings from FLASH: %s\n", flash_line.c_str());
+  
+  if(b_usbConnected) {
+    //("\n\nRead Config Address: %02x\n", settings);
+    // for(int i = 0; i < 256; i++)
+    // {
+    //   char inchar = (char) *(settings + i);
+    //   if(inchar == 0x00) {
+    //     //printf("BREAK!");
+    //     break;}
+    //   flash_line.push_back(inchar);
+    // }
+    //uint off = 0;
+    //char inchar = (char) *settings;
+    // while(inchar != 0x00) { // using a null to cap the end of the string, like c_str()
+    //   //printf("[%d]:%c\n", off, inchar);
+    //   off++;
+    //   flash_line.append(1, inchar);
+    //   inchar = (char) *(settings + off);
+    // }
+    printf("%s\n", flash_line.c_str());
+  }
   // now our string holds the whole set of config params as string tokens
   // delimited by '|'
 
@@ -253,14 +255,14 @@ void handleGPSData() {
           if(b_rtcUpdated) {
             // printf("Write RTC I2C: %d\n", i2c_write_blocking(i2c_default, GCA_ADDR, i2csend, 8, false));
             // sleep_ms(5); // ??
-            printf("\nUpdated RTC: %4d-%02d-%02d %02d:%02d:%02d %d\n", t.year, t.month, t.day, t.hour, t.min, t.sec, b_rtcUpdated);
+            if(b_usbConnected) printf("\nUpdated RTC: %4d-%02d-%02d %02d:%02d:%02d %d\n", t.year, t.month, t.day, t.hour, t.min, t.sec, b_rtcUpdated);
           }
         }
         // update the RTC at 59 past each hour
         if(t.min == 59) {
           if(!b_59Updated) {
             b_rtcUpdated = rtc_set_datetime(&t);
-            printf("\nUpdated RTC: %4d-%02d-%02d %02d:%02d:%02d %d\n", t.year, t.month, t.day, t.hour, t.min, t.sec, b_rtcUpdated);
+            if(b_usbConnected) printf("\nUpdated RTC: %4d-%02d-%02d %02d:%02d:%02d %d\n", t.year, t.month, t.day, t.hour, t.min, t.sec, b_rtcUpdated);
             b_59Updated = true;
           }
         }
@@ -317,7 +319,7 @@ void handleGPSData() {
           mypos += val;
         }
         mypos += comment.substr(0, 36); // comment for now but use settings value for comment
-        printf("Sending:%s\n\n", mypos.c_str());
+        if(b_usbConnected) printf("Sending:%s\n\n", mypos.c_str());
         // send the beacon
         loadOutQueue(UIKISSUtils::kissWrap(UIKISSUtils::buildUIFrame(dest_addr, source_addr, digi1, digi2, mypos)), true);
         b_beaconSent = true;
@@ -412,21 +414,21 @@ void loop() {
   }
   if(b_fullcmd) {
     if((incmd.length() > 0)) { //} && (incmd.find('\r') != std::string::npos)) {
-      printf("\nincmd: %s\n", incmd.c_str());
+      //printf("\nincmd: %s\n", incmd.c_str());
       std::vector<std::string> parts;
       split(incmd, parts, '|', true);
       // get rid of the carriage return on the end
       const std::string cmd = parts.at(0); //.substr(0, parts.at(0).length() - 1);
-      printf("StdIn cmd: %s\n", cmd.c_str());
+      //printf("StdIn cmd: %s\n", cmd.c_str());
       if(cmd == std::string("READCONFIG")) {
         //printf("Read the Config Data from FLASH\n");
         read_config();
       }
       else if(cmd == std::string("WRITECONFIG")) {
         // Trigger flash write here
-        printf("Trigger the Flash write of the config settings.\n");
+        //printf("Trigger the Flash write of the config settings.\n");
         // may also need to do multicore_reset_core1() followed by
-        printf("Reset core1: %s", incmd.substr(12).c_str());
+        //printf("Reset core1: %s", incmd.substr(12).c_str());
         multicore_reset_core1();
         flash_config(incmd.substr(12));
         // and finally relaunching multicore_launch_core1(handleGPSData);    
@@ -434,11 +436,12 @@ void loop() {
         read_config();  
         sleep_ms(500);
         multicore_launch_core1(handleGPSData);
-        printf("restart core1");
+        //printf("restart core1");
       }
     }
     incmd.clear();
   }   
+  b_usbConnected = stdio_usb_connected();
 }
 
 int main() {
@@ -450,23 +453,28 @@ int main() {
   
   // startup stdio on the USB port for trace
   stdio_usb_init();
-  while(!stdio_usb_connected()){;}
-  printf("USB Connected...\n");
+  sleep_ms(500);  // 
+  if(stdio_usb_connected()){b_usbConnected = true;}
+  if(b_usbConnected) printf("USB Connected...\n");
   
   // Start the RTC
   rtc_init();
   rtc_set_datetime(&t); // dummy DTG defined at the top!
-  // Set up the GPS UART interface on uart0
-  printf("Set up GPS uart connection at %d baud\n", uart_init(GPS, GPS_BAUD));  //8N1 No flow control std. it seems  
-  printf("GPS uart0 Enabled? %d\n", uart_is_enabled(GPS));  
+  // Set up the GPS UART interface on 
+  if(b_usbConnected) {
+    printf("Set up GPS uart connection at %d baud\n", uart_init(GPS, GPS_BAUD));  //8N1 No flow control std. it seems  
+    printf("GPS uart0 Enabled? %d\n", uart_is_enabled(GPS));  
+  }
   // GPS module Pins 0, 1
   gpio_set_function(UART_GPS_TX_PIN, GPIO_FUNC_UART);
   gpio_set_function(UART_GPS_RX_PIN, GPIO_FUNC_UART);
 
   // Now the MODEM uart1
   // Set up the MODEM UART interface on uart1
-  printf("Set up MODEM uart connection at %d and send KISS setup commands...\n", uart_init(MODEM, MODEM_BAUD));
-  printf("MODEM uart1 Enabled? %d\n", uart_is_enabled(uart1));  
+  if(b_usbConnected) {
+    printf("Set up MODEM uart connection at %d and send KISS setup commands...\n", uart_init(MODEM, MODEM_BAUD));
+    printf("MODEM uart1 Enabled? %d\n", uart_is_enabled(uart1));  
+  }
   // turn off RTS/CTS flow control
   uart_set_hw_flow(MODEM, false, false); // defaults not specified 
   uart_set_format(MODEM, 8, 1, UART_PARITY_NONE); // default values
@@ -492,10 +500,12 @@ int main() {
   // queue_init(coreq, 32, 24);
   // enable multicore and move the GPS data crunching to core1
   // END TEST
-  printf("Set Dummy RTC Date-Time: %4d-%02d-%02d %02d:%02d:%02d\n", t.year, t.month, t.day, t.hour, t.min, t.sec);
-  //sleep_ms(1000);
-  // NOTE: the device must be put into NMEA 0183 mode by the user first
-  printf("\n\nMove the GPS handler to core1\n\n");
+  if(b_usbConnected) {
+    printf("Set Dummy RTC Date-Time: %4d-%02d-%02d %02d:%02d:%02d\n", t.year, t.month, t.day, t.hour, t.min, t.sec);
+    //sleep_ms(1000);
+    // NOTE: the device must be put into NMEA 0183 mode by the user first
+    printf("\n\nMove the GPS handler to core1\n\n");
+  }
   b_rtcUpdated = false;
   multicore_launch_core1(handleGPSData);
   sleep_ms(2500); // let core1 get settled
