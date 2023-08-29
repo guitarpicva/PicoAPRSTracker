@@ -453,9 +453,9 @@ int main() {
   
   // startup stdio on the USB port for trace
   stdio_usb_init();
-  sleep_ms(500);  // 
+  //sleep_ms(500);  // 
   if(stdio_usb_connected()){b_usbConnected = true;}
-  if(b_usbConnected) printf("USB Connected...\n");
+  if(b_usbConnected) printf("USB stdio Connected...\n");
   
   // Start the RTC
   rtc_init();
